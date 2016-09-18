@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 using LibGit2Sharp;
-using System.Threading;
-using System.Collections;
 using System.Linq;
 using System.Reflection;
 
@@ -12,7 +10,6 @@ namespace gitnano
     {
         static void Main(string[] args)
         {
-            //AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
             if (args.Count() !=2 )
             {
                 Console.WriteLine("using: gitnano.exe [repurl] dirname");
@@ -74,25 +71,6 @@ namespace gitnano
                 Console.WriteLine("repository successfully cloned");
             }
             //Thread.Sleep(1000);
-        }
-
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            return Load(args.Name);
-        }
-
-        public static Assembly Load(string resource)
-        {
-            // Get the byte[] of the DLL
-            byte[] ba = null;
-            Assembly curAsm = Assembly.GetExecutingAssembly();
-            using (Stream stm = curAsm.GetManifestResourceStream(Path.GetFileNameWithoutExtension(resource)))
-            {
-                ba = new byte[(int)stm.Length];
-                stm.Read(ba, 0, (int)stm.Length);
-            }
-            // Load it into memory    
-            return Assembly.LoadFile(resource);
         }
 
         private static void RemoveAll(string newdir)
