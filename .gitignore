@@ -13,6 +13,8 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+gitnano/bin/
+gitnano/obj/
 
 # Windows shortcuts
 *.lnk
