@@ -2,6 +2,8 @@
 using System.IO;
 using LibGit2Sharp;
 using System.Threading;
+using System.Collections;
+using System.Linq;
 
 namespace gitnano
 {
@@ -114,7 +116,9 @@ namespace gitnano
                 //repo.Reset(repo.Head.Tip);
                 repo.Index.Replace(repo.Head.Tip);
                 Console.WriteLine("Try pull from remote repository");
-                LibGit2Sharp.Commands.Pull(repo, GetSign(), options);
+                
+                //LibGit2Sharp.Commands.Pull(repo, GetSign(), options);
+                repo.Fetch(repo.Network.Remotes.First().Name  , options.FetchOptions);
                 // get difference in the git tree (file-system)
                 foreach (var item in repo.Commits)
                 {
