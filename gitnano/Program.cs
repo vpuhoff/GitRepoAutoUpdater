@@ -4,6 +4,7 @@ using LibGit2Sharp;
 using System.Threading;
 using System.Collections;
 using System.Linq;
+using System.Reflection;
 
 namespace gitnano
 {
@@ -11,6 +12,12 @@ namespace gitnano
     {
         static void Main(string[] args)
         {
+            //AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+            if (args.Count() !=2 )
+            {
+                Console.WriteLine("using: gitnano.exe [repurl] dirname");
+                return;
+            }
             var sourceUrl = args[0];
             var namedir = args[1];
             string dirname = GetDirName2(namedir);
@@ -66,7 +73,26 @@ namespace gitnano
                 Repository.Clone(sourceUrl, dirname);
                 Console.WriteLine("repository successfully cloned");
             }
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
+        }
+
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            return Load(args.Name);
+        }
+
+        public static Assembly Load(string resource)
+        {
+            // Get the byte[] of the DLL
+            byte[] ba = null;
+            Assembly curAsm = Assembly.GetExecutingAssembly();
+            using (Stream stm = curAsm.GetManifestResourceStream(Path.GetFileNameWithoutExtension(resource)))
+            {
+                ba = new byte[(int)stm.Length];
+                stm.Read(ba, 0, (int)stm.Length);
+            }
+            // Load it into memory    
+            return Assembly.LoadFile(resource);
         }
 
         private static void RemoveAll(string newdir)
@@ -105,21 +131,13 @@ namespace gitnano
             {
                 var tipId = repo.Head.Tip.Tree;
                 Console.WriteLine("HEAD tree id: " + tipId.Id.ToString());
-
-                // Pull changes
                 PullOptions options = new PullOptions();
-
                 options.FetchOptions = new FetchOptions();
                 options.MergeOptions = new MergeOptions();
-                // ! Only for trying to fix the bug. Should not be here
-                //options.MergeOptions.FileConflictStrategy = CheckoutFileConflictStrategy.Theirs;
-                //repo.Reset(repo.Head.Tip);
                 repo.Index.Replace(repo.Head.Tip);
                 Console.WriteLine("Try pull from remote repository");
-                
-                //LibGit2Sharp.Commands.Pull(repo, GetSign(), options);
                 repo.Fetch(repo.Network.Remotes.First().Name  , options.FetchOptions);
-                // get difference in the git tree (file-system)
+                repo.Network.Pull(GetSign(), options);
                 foreach (var item in repo.Commits)
                 {
                     Console.WriteLine(item.Author + ":\t" + item.MessageShort);
